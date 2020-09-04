@@ -1,0 +1,455 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ folder }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">{{ folder }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div id="container">
+    <div *ngIf="folder == 'Perfil'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>{{ email }}</ion-card-subtitle>
+          <ion-card-title>{{ first_name }} {{ last_name }}</ion-card-title>
+        </ion-card-header>
+      
+        <ion-card-content>
+          Teléfono: {{ mobile }}<br>
+          Dirección: {{ address }}
+        </ion-card-content>
+      </ion-card>
+      
+      <ion-card>
+        <ion-item>
+          <ion-icon name="eye-off-outline" slot="start"></ion-icon>
+          <ion-label> ********</ion-label>
+          <ion-button fill="outline" slot="end">Cambiar</ion-button>
+        </ion-item>
+      
+        <ion-card-content>
+          Recomendamos cambiar la contraseña cada 2 meses, con el fin de proteger los datos.
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-item>
+          <ion-button fill="outline" slot="end">Intersoft</ion-button>
+        </ion-item>
+      
+        <ion-card-content class="banner">
+          La empresa Wakusoft te invita a gestionar tus facturas en Intersoft
+          donde podrás tener el control de las referencias, clientes, proveedores, 
+          pagos y contabilidad. <br>
+          <strong>Estamos aliados con facturatech para la facturación electrónica DIAN</strong>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <div *ngIf="folder == 'Facturar'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>De, </ion-card-title>
+          <ion-card-subtitle style="font-size: 10px;">{{ email }}</ion-card-subtitle>
+          <ion-card-title style="font-size: 10px;">{{ first_name }} {{ last_name }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Para, </ion-card-title>
+        </ion-card-header>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Nombre Compañia:</ion-label>
+            <ion-input placeholder="ej.(Wakusoft)" [(ngModel)]="nombre"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Dirección:</ion-label>
+            <ion-input placeholder="ej.(Calle 38)" [(ngModel)]="direccion"></ion-input>
+            <ion-input value="$" type="hidden" [(ngModel)]="currency"></ion-input>
+            <ion-input value="-" type="hidden" [(ngModel)]="tipo"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+      
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Prod. No:</ion-label>
+            <ion-input [(ngModel)]="item_code"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Nombre Producto:</ion-label>
+            <ion-input [(ngModel)]="item_name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Cantidad:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_quantity" (change)='onchangeCantidad($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Precio:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_price" (change)='onchangePrecio($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Total:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_final_amount" disabled="true"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+      <ion-button color="success" (click)="AgregarProducto()">Agregar</ion-button>
+
+      <div style="width: 100%;overflow-x: scroll;">
+        <table class="table"> 
+          <thead>
+            <tr>
+              <th></th>
+              <th>Producto</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tr *ngFor="let item of productos;">
+            <td style="width: 50px;"><div class="danger">-</div></td>
+            <td style="width: 200px;">{{ item.item_name }}</td>
+            <td style="width: 100px;">{{ item.order_item_final_amount }}</td>
+          </tr>
+        </table>
+      </div>
+      
+
+      
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Notas</ion-label>
+            <ion-textarea placeholder="Notas" [(ngModel)]="notas" ></ion-textarea>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Subtotal</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_before_tax" disabled="true"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Tasa Impuesto (%):</ion-label>
+            <ion-input type="number" [(ngModel)]="order_tax_per" placeholder="ej(19)" (change)='onchangeImpuesto($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Monto Inpuesto:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_tax" disabled="true"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Total:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_after_tax" disabled="true"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+      <ion-button color="success" (click)="GuardarFactura()">Guardar</ion-button><br><br><br><br>
+
+    </div>
+
+    <div *ngIf="folder == 'Compras'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Para, </ion-card-title>
+          <ion-card-subtitle style="font-size: 10px;">{{ email }}</ion-card-subtitle>
+          <ion-card-title style="font-size: 10px;">{{ first_name }} {{ last_name }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>De, </ion-card-title>
+        </ion-card-header>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Nombre Compañia:</ion-label>
+            <ion-input placeholder="ej.(Wakusoft)" [(ngModel)]="nombre"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Dirección:</ion-label>
+            <ion-input placeholder="ej.(Calle 38)" [(ngModel)]="direccion"></ion-input>
+            <ion-input value="$" type="hidden" [(ngModel)]="currency"></ion-input>
+            <ion-input value="-" type="hidden" [(ngModel)]="tipo"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+      
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Prod. No:</ion-label>
+            <ion-input [(ngModel)]="item_code"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Nombre Producto:</ion-label>
+            <ion-input [(ngModel)]="item_name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Cantidad:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_quantity" (change)='onchangeCantidad($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Precio:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_price" (change)='onchangePrecio($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Total:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_item_final_amount" disabled="true"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+      <ion-button color="success" (click)="AgregarProducto()">Agregar</ion-button>
+
+      <div style="width: 100%;overflow-x: scroll;">
+        <table class="table"> 
+          <thead>
+            <tr>
+              <th></th>
+              <th>Producto</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tr *ngFor="let item of productos;">
+            <td style="width: 50px;"><div class="danger">-</div></td>
+            <td style="width: 200px;">{{ item.item_name }}</td>
+            <td style="width: 100px;">{{ item.order_item_final_amount }}</td>
+          </tr>
+        </table>
+      </div>
+      
+
+      
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Notas</ion-label>
+            <ion-textarea placeholder="Notas" [(ngModel)]="notas" ></ion-textarea>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+
+      <ion-card>
+        <ion-list lines="full" class="ion-no-margin">
+          <ion-item>
+            <ion-label position="stacked">Subtotal</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_before_tax" disabled="true"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Tasa Impuesto (%):</ion-label>
+            <ion-input type="number" [(ngModel)]="order_tax_per" placeholder="ej(19)" (change)='onchangeImpuesto($event.target.value)'></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Monto Inpuesto:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_tax" disabled="true"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Total:</ion-label>
+            <ion-input type="number" [(ngModel)]="order_total_after_tax" disabled="true"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+      <ion-button color="success" (click)="GuardarFactura()">Guardar</ion-button><br><br><br><br>
+
+    </div>
+
+
+    <div *ngIf="folder == 'Historial'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Historial</ion-card-subtitle>
+          <ion-card-title>Ventas</ion-card-title>
+        </ion-card-header>
+      
+        <ion-card-content>
+          Totales: {{ total }}<br><br>
+
+          <div>
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of ventas;">
+                  <td style="width: 50px !important;">{{ item.order_id }}</td>
+                  <td>{{ item.order_date }}</td>
+                  <td style="width: 100px !important;">{{ item.order_receiver_name }}</td>
+                  <td>{{ item.order_total_after_tax }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div> 
+        </ion-card-content>
+      </ion-card>
+      
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Historial</ion-card-subtitle>
+          <ion-card-title>Compras</ion-card-title>
+        </ion-card-header>
+      
+        <ion-card-content>
+          Totales: {{ total }}<br><br>
+
+          <div >
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Fecha</th>
+                  <th>Proveedor</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of ventas;">
+                  <td style="width: 50px !important;">{{ item.order_id }}</td>
+                  <td>{{ item.order_date }}</td>
+                  <td style="width: 100px !important;">{{ item.order_receiver_name }}</td>
+                  <td>{{ item.order_total_after_tax }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div> 
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-item>
+          <ion-button fill="outline" slot="end">Intersoft</ion-button>
+        </ion-item>
+      
+        <ion-card-content class="banner">
+          La empresa Wakusoft te invita a gestionar tus facturas en Intersoft
+          donde podrás tener el control de las referencias, clientes, proveedores, 
+          pagos y contabilidad. <br>
+          <strong>Estamos aliados con facturatech para la facturación electrónica DIAN</strong>
+        </ion-card-content>
+      </ion-card>
+      
+
+    </div>
+
+    <div *ngIf="folder == 'Salir'">
+      <ion-card>
+        <ion-item>
+          <ion-button fill="outline" slot="end">Intersoft</ion-button>
+        </ion-item>
+      
+        <ion-card-content class="banner" style="height: 200px;overflow-y: scroll;">
+          La empresa Wakusoft te invita a gestionar tus facturas en Intersoft
+          donde podrás tener el control de las referencias, clientes, proveedores, 
+          pagos y contabilidad. <br>
+          <strong>Estamos aliados con facturatech para la facturación electrónica DIAN</strong>
+          <br><br><br><br><br>
+        </ion-card-content>
+      </ion-card>
+      <ion-button color="danger" (click)="Salir()">Salir</ion-button>
+    </div>
+
+    <div *ngIf="folder == 'Inbox'">
+      <div *ngIf="login == true" style="position: fixed;top:0;left: 0;width: 100%;height: 600px;z-index: 1000;background: black;">
+        <ion-card >
+          <ion-card-header>
+            <ion-card-subtitle>WFactura</ion-card-subtitle>
+            <ion-card-title>Ingresar</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="full" class="ion-no-margin">
+              <ion-item>
+                <ion-label position="stacked" >Email</ion-label>
+                <ion-input [(ngModel)]="email"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Contraseña</ion-label>
+                <ion-input type="password" [(ngModel)]="password"></ion-input>
+              </ion-item>
+            </ion-list>
+            <ion-button color="success" (click)="Login()">Entrar</ion-button>
+            <ion-button color="primary" (click)="CrearUsuarios()">Date de alta</ion-button>
+            <br><br><br><br>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-item>
+            <ion-button fill="outline" slot="end">Intersoft</ion-button>
+          </ion-item>
+        
+          <ion-card-content class="banner" style="height: 200px;overflow-y: scroll;">
+            La empresa Wakusoft te invita a gestionar tus facturas en Intersoft
+            donde podrás tener el control de las referencias, clientes, proveedores, 
+            pagos y contabilidad. <br>
+            <strong>Estamos aliados con facturatech para la facturación electrónica DIAN</strong>
+            <br><br><br><br><br>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <div *ngIf="login == false" style="position: fixed;top:0;left: 0;width: 100%;height: 600px;z-index: 1000;background: black;">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>WFactura</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="full" class="ion-no-margin">
+              <ion-item>
+                <ion-label position="stacked" >Email</ion-label>
+                <ion-input [(ngModel)]="email"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked" >Nombres</ion-label>
+                <ion-input [(ngModel)]="first_name"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked" >Apellidos</ion-label>
+                <ion-input [(ngModel)]="last_name"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked" >Teléfono</ion-label>
+                <ion-input [(ngModel)]="mobile"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked" >Dirección</ion-label>
+                <ion-input [(ngModel)]="address"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Contraseña</ion-label>
+                <ion-input type="password" [(ngModel)]="password"></ion-input>
+              </ion-item>
+            </ion-list>
+            <ion-button color="success" (click)="Setuser()">Date de alta</ion-button>
+            <ion-button color="primary" (click)="LoginUsuarios()">Regresar</ion-button>
+            <br><br><br><br>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      
+    </div>
+
+  </div>
+</ion-content>

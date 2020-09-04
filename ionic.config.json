@@ -1,0 +1,7 @@
+{
+  "name": "wfactura",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
