@@ -40,6 +40,7 @@ export class UserServiceService {
         'order_total_before_tax':order_total_before_tax,
         'notas':notas, 'tipo':tipo, 'currency':currency, 'direccion':direccion, 'nombre':nombre
       }
+      console.log(datos);
       const url = "https://wakusoft.com/appropias/David/factura_electronica/FACTURA%20ELECTRONICA/api.php?controller=setFactura";
       console.log(url);
       return this.http.post(url,JSON.stringify(datos));

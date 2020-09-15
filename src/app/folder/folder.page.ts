@@ -3,6 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { UserServiceService } from '../services/user-service.service';
 
+import { ModalController } from '@ionic/angular';
+import { SplashPage } from '../splash/splash.page';
+
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.page.html',
@@ -37,6 +40,8 @@ export class FolderPage implements OnInit {
   public notas: string;
   public nombre: string;
 
+  public resultadodata: string;
+
 
   public productos: any[];
 
@@ -45,9 +50,47 @@ export class FolderPage implements OnInit {
   public total: number;
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router,
-              public userService: UserServiceService) { }
+              public userService: UserServiceService, public modalController: ModalController) { }
 
   ngOnInit() {
+    try{
+      
+      this.folder = this.activatedRoute.snapshot.paramMap.get('id');
+      console.log(this.folder);
+
+      
+      this.login = true;
+      this.total = 100000;
+      if(this.folder == "Inbox"){
+        this.presentModal();
+      }
+      else{
+        this.getusuarios();
+      }
+      if(this.folder == "Historial"){        
+        this.GetHistorial();
+      }
+      if(this.folder == "Facturar" || this.folder == "Compras"){        
+        this.productos = [];
+        this.order_item_price = 0;
+        this.order_total_before_tax = 0;
+        this.currency = "$";
+      }
+      if(this.folder == "Facturar"){
+        this.tipo = "VENTA";
+      }
+      else{
+        this.tipo = "COMPRA";
+      }
+    }
+    catch(Exception){
+      console.log(Exception.toString());
+    }
+    
+    
+  }
+
+  getusuarios(){
     var usuario = JSON.parse(localStorage.getItem("usuario"));
     this.email = usuario.email;
     this.first_name = usuario.first_name;
@@ -55,24 +98,6 @@ export class FolderPage implements OnInit {
     this.mobile = usuario.mobile;
     this.address = usuario.address;
     this.password = usuario.password;
-    this.folder = this.activatedRoute.snapshot.paramMap.get('id');
-    this.login = true;
-    this.total = 100000;
-    if(this.folder == "Historial"){
-      this.GetHistorial();
-    }
-    if(this.folder == "Facturar" || this.folder == "Compras"){
-      this.productos = [];
-      this.order_total_before_tax = 0;
-      this.currency = "$";
-    }
-    if(this.folder == "Facturar"){
-      this.tipo = "VENTA";
-    }
-    else{
-      this.tipo = "COMPRA";
-    }
-    
   }
 
   onchangeCantidad() {
@@ -105,6 +130,7 @@ export class FolderPage implements OnInit {
   }
 
   GuardarFactura(){
+    this.getusuarios();
     this.userService.setFactura(this.email, this.order_total_after_tax, this.order_total_tax, this.order_tax_per, this.order_total_before_tax,
       this.notas, this.tipo, this.currency, this.direccion, this.nombre).subscribe(
         (data) => { // Success
@@ -115,6 +141,7 @@ export class FolderPage implements OnInit {
           }
           else{
             this.ventas = resultado['body'];
+            this.resultadodata = resultado['body']['msm'];
             this.productos.forEach((item) => {
               this.userService.setProductos(resultado['body']['id'], item.order_item_final_amount, item.order_item_price,
               item.order_item_quantity, item.item_name, item.item_code).subscribe(
@@ -125,6 +152,7 @@ export class FolderPage implements OnInit {
                     //alert(resultado['body']['msm']);
                   }
                   else{
+                    this.resultadodata = this.resultadodata + resultado['body']['msm'];
                     this.ventas = resultado['body'];
                   }
                 },
@@ -135,6 +163,7 @@ export class FolderPage implements OnInit {
               );
             });
           }
+          alert(this.resultadodata);
         },
         (error) =>{
           console.error(error);
@@ -142,11 +171,13 @@ export class FolderPage implements OnInit {
         }
       );
       
+      
   }
 
   
 
   GetHistorial() {
+    this.getusuarios();
     this.userService.getHistorial(this.email)
     .subscribe(
       (data) => { // Success
@@ -195,6 +226,7 @@ export class FolderPage implements OnInit {
   }
 
   Setuser() {
+    this.getusuarios();
     this.userService.setUser(this.email, this.password, this.first_name, this.last_name, this.mobile, this.address)
     .subscribe(
       (data) => { // Success
@@ -220,16 +252,22 @@ export class FolderPage implements OnInit {
     this.Onshow('/folder/Inbox');
   }
 
-  Onshow(link) {
-    var usuario = JSON.parse(localStorage.getItem("usuario"));
-    this.email = usuario.email;
-    this.first_name = usuario.first_name;
-    this.last_name = usuario.last_name;
-    this.mobile = usuario.mobile;
-    this.address = usuario.address;
-    this.password = usuario.password;
-    this.router.navigate([link]);
+  async Onshow(link) {
+    try{
+      this.presentModal();
+      this.router.navigate([link]);
+    }
+    catch(Exception){
+      console.log(Exception.toString());
+    }
     
+  }
+
+  async presentModal() {
+    const modal = await this.modalController.create({
+      component: SplashPage
+    });
+    return await modal.present();
   }
 
 }
